@@ -3,7 +3,7 @@ export type LookupTool = {
   name: string
   description: string
   category: string
-  formType: 'LOVE' | 'AFFINITY' | 'BABY_NAMING'
+  formType: 'LOVE' | 'AFFINITY' | 'BABY_NAMING' | 'NUMEROLOGY'
 }
 
 export const LOOKUP_TOOLS: LookupTool[] = [
@@ -27,6 +27,13 @@ export const LOOKUP_TOOLS: LookupTool[] = [
     description: 'Phân tích điểm phong thủy thần số học cho tên của bé.',
     category: 'than-so-hoc',
     formType: 'BABY_NAMING',
+  },
+  {
+    slug: 'than-so-hoc-ca-nhan',
+    name: 'Tra Cứu Thần Số Học Cá Nhân',
+    description: 'Khám phá con số chủ đạo, sứ mệnh và bức tranh thần số học của riêng bạn.',
+    category: 'than-so-hoc',
+    formType: 'NUMEROLOGY',
   },
 ]
 

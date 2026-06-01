@@ -4,6 +4,7 @@ import { post } from '@/lib/api'
 import { findLookupTool } from '@/lib/lookup-tools'
 import { LoveForm } from '@/components/lookups/love-form'
 import { BabyNamingForm } from '@/components/lookups/baby-naming-form'
+import { NumerologyForm } from '@/components/lookups/numerology-form'
 import { AnimatedLoader } from '@/components/lookups/animated-loader'
 import type { LoveLookupInput, BabyNamingInput, LookupSubmitResponse } from '@/types'
 
@@ -61,12 +62,27 @@ function LookupFormPage() {
     }
   }
 
+  async function handleNumerologySubmit(data: { name: string; birthDate: string }) {
+    // Đếm 1 lượt tra cứu (best-effort, lỗi vẫn cho xem báo cáo)
+    try {
+      await post('/api/numerology/lookups', {})
+    } catch {
+      /* noop */
+    }
+    navigate({
+      to: '/than-so-hoc/bao-cao',
+      search: { name: data.name, birthDate: data.birthDate },
+    })
+  }
+
   if (loading) return <AnimatedLoader />
 
   return (
     <main className="min-h-screen px-4 py-12">
       {error && <p className="mb-4 text-center text-danger">{error}</p>}
-      {isLove ? (
+      {tool.formType === 'NUMEROLOGY' ? (
+        <NumerologyForm onSubmit={handleNumerologySubmit} />
+      ) : isLove ? (
         <LoveForm variant={tool.formType as 'LOVE' | 'AFFINITY'} onSubmit={handleLoveSubmit} />
       ) : (
         <BabyNamingForm onSubmit={handleNamingSubmit} />
