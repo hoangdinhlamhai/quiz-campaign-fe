@@ -12,6 +12,7 @@ interface UseQuizOptions {
 interface QuizState {
   currentIndex: number;
   answers: Record<string, AnswerValue>;
+  flagged: Record<string, boolean>;
   isStarted: boolean;
   isCompleted: boolean;
   hasSavedProgress?: boolean;
@@ -46,6 +47,7 @@ export function useQuiz({ questions, quizSlug, quizId }: UseQuizOptions) {
     if (saved && saved.isStarted && !saved.isCompleted) {
       return {
         ...saved,
+        flagged: saved.flagged ?? {},
         isStarted: false,
         hasSavedProgress: true,
       };
@@ -53,6 +55,7 @@ export function useQuiz({ questions, quizSlug, quizId }: UseQuizOptions) {
     return {
       currentIndex: 0,
       answers: {},
+      flagged: {},
       isStarted: false,
       isCompleted: false,
       hasSavedProgress: false,
@@ -79,11 +82,24 @@ export function useQuiz({ questions, quizSlug, quizId }: UseQuizOptions) {
     setState({
       currentIndex: 0,
       answers: {},
+      flagged: {},
       isStarted: true,
       isCompleted: false,
       hasSavedProgress: false,
     });
   }, [quizSlug]);
+
+  const toggleFlag = useCallback((questionId: string) => {
+    setState((prev) => {
+      const next = { ...prev.flagged };
+      if (next[questionId]) {
+        delete next[questionId];
+      } else {
+        next[questionId] = true;
+      }
+      return { ...prev, flagged: next };
+    });
+  }, []);
 
   const selectAnswer = useCallback((questionId: string, answerId: string) => {
     setState((prev) => ({
@@ -136,6 +152,7 @@ export function useQuiz({ questions, quizSlug, quizId }: UseQuizOptions) {
     currentIndex: state.currentIndex,
     currentQuestion,
     answers: state.answers,
+    flagged: state.flagged,
     isStarted: state.isStarted,
     isCompleted: state.isCompleted,
     hasSavedProgress: state.hasSavedProgress,
@@ -145,6 +162,7 @@ export function useQuiz({ questions, quizSlug, quizId }: UseQuizOptions) {
     quizId,
     startQuiz,
     resetQuiz,
+    toggleFlag,
     selectAnswer,
     setScale,
     goNext,

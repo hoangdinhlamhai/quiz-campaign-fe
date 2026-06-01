@@ -7,6 +7,7 @@ interface QuizProgressProps {
   isCritical: boolean;
   answers: Record<string, unknown>;
   questionIds: string[];
+  flagged: Record<string, boolean>;
   onGoToQuestion: (index: number) => void;
 }
 
@@ -19,6 +20,7 @@ export function QuizProgress({
   isCritical,
   answers,
   questionIds,
+  flagged,
   onGoToQuestion,
 }: QuizProgressProps) {
   const timerColor = isCritical
@@ -49,6 +51,7 @@ export function QuizProgress({
         {questionIds.map((qId, i) => {
           const isAnswered = qId in answers;
           const isCurrent = i === currentIndex;
+          const isFlagged = !!flagged[qId];
           return (
             <button
               key={qId}
@@ -59,8 +62,9 @@ export function QuizProgress({
                   : isAnswered
                     ? 'border-accent/50 bg-accent-muted'
                     : 'border-border bg-surface-elevated'
-              }`}
-              aria-label={`Câu ${i + 1}`}
+              } ${isFlagged ? 'ring-2 ring-yellow-400 ring-offset-1 ring-offset-surface' : ''}`}
+              aria-label={`Câu ${i + 1}${isFlagged ? ' (đã đánh dấu)' : ''}`}
+              title={isFlagged ? 'Đã đánh dấu' : undefined}
             />
           );
         })}

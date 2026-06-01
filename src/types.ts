@@ -122,11 +122,16 @@ export interface DiscResult {
   detail?: DiscDetail;    // attach ở results.ts (giống MBTI)
 }
 
-// Diễn giải mức điểm cho LIKERT single (EQ/CQ/AQ/SQ/PQ/tâm lý)
+// Diễn giải mức điểm cho LIKERT single (EQ/CQ/AQ/SQ/PQ/tâm lý) — 5 mục
 export interface LikertDetail {
-  name: string;        // tên chỉ số, vd "Trí tuệ cảm xúc"
-  level: string;       // Cao / Trung bình / Thấp
-  description: string; // ý nghĩa mốc điểm + gợi ý
+  name: string;          // tên chỉ số, vd "Trí tuệ cảm xúc"
+  level: string;         // Cao / Trung bình / Thấp
+  overview: string;      // ý nghĩa tổng quan mốc điểm
+  strengths: string[];   // điểm mạnh ở mức này
+  watchouts: string[];   // điều cần lưu ý
+  tips: string[];        // gợi ý phát triển
+  closing: string;       // câu kết động viên
+  description?: string;  // transitional (FE cũ) — sẽ bỏ
 }
 
 export interface LikertResult {
@@ -162,6 +167,16 @@ export interface MiResult {
   detail?: { items: MiItemDetail[]; topLabels: string[] };
 }
 
+// Diễn giải IQ theo dải điểm — 5 mục
+export interface IqDetail {
+  band: string;                  // "Xuất sắc"...
+  overview: string;
+  cognitiveStrengths: string[];
+  growthAreas: string[];
+  tips: string[];
+  note: string;
+}
+
 export interface IqResult {
   kind: 'IQ';
   correct: number;
@@ -169,6 +184,7 @@ export interface IqResult {
   iqScore: number;
   classification: string;
   age?: number; // tuổi đã nhập — điểm đã chuẩn hóa theo độ tuổi
+  detail?: IqDetail; // attach runtime ở results.ts
 }
 
 export type ScoreResult =
