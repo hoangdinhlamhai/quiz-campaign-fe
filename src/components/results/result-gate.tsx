@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { post } from '@/lib/api'
-// import { SenlyzerLock } from '@/components/senlyzer-lock' // CPA GATE - tạm comment
+import { SenlyzerLock } from '@/components/senlyzer-lock'
 import { ResultView } from './result-view'
 import { RelatedQuizzes } from './related-quizzes'
 import type { ResultResponse, UnlockedResult } from '@/types'
@@ -15,14 +15,8 @@ export function ResultGate({ resultId, initialData }: ResultGateProps) {
   const [unlocking, setUnlocking] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // AUTO-UNLOCK: tạm thời bỏ CPA gate để test
-  useEffect(() => {
-    if (data.isLocked) {
-      autoUnlock()
-    }
-  }, [])
-
-  async function autoUnlock() {
+  async function handleUnlocked() {
+    if (!data.isLocked) return
     setUnlocking(true)
     setError(null)
     try {
@@ -37,20 +31,15 @@ export function ResultGate({ resultId, initialData }: ResultGateProps) {
 
   if (data.isLocked) {
     return (
-      <div className="mx-auto max-w-2xl p-4 text-center">
-        <h1 className="mb-4 text-2xl font-bold text-foreground">{data.quizTitle}</h1>
-        {unlocking && (
-          <p className="text-muted">Đang mở khoá kết quả...</p>
-        )}
-        {error && (
-          <p className="text-danger">{error}</p>
-        )}
-        {/* CPA GATE tạm comment — uncomment khi deploy production
-        <SenlyzerLock contentId={`quiz-${resultId}`} onUnlocked={handleUnlocked}>
+      <SenlyzerLock contentId={`quiz-${resultId}`} onUnlocked={handleUnlocked}>
+        {unlocking ? (
+          <p className="p-8 text-center text-muted">Đang mở khoá kết quả...</p>
+        ) : error ? (
+          <p className="p-8 text-center text-danger">{error}</p>
+        ) : (
           <div className="h-48 rounded-lg bg-surface" />
-        </SenlyzerLock>
-        */}
-      </div>
+        )}
+      </SenlyzerLock>
     )
   }
 

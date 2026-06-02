@@ -1,4 +1,4 @@
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Menu, X, Sparkles, Brain, Briefcase } from 'lucide-react'
 
@@ -10,8 +10,8 @@ const NAV_ITEMS = [
 
 export function Header() {
   const [open, setOpen] = useState(false)
-  const router = useRouter()
-  const currentPath = router.state.location.pathname
+  const location = useLocation()
+  const currentPath = location.pathname
 
   return (
     <header className="glass fixed top-0 left-0 right-0 z-50">

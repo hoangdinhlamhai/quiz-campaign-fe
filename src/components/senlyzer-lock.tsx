@@ -33,6 +33,8 @@ export function SenlyzerLock({ contentId, children, onUnlocked }: Props) {
   const [shake, setShake] = useState(false)
   const [statusMsg, setStatusMsg] = useState<string | null>(null)
   const [copyToast, setCopyToast] = useState<string | null>(null)
+  const [switching, setSwitching] = useState(false)
+  const [noCampaign, setNoCampaign] = useState(false)
   const unlockedRef = useRef(false)
   const sessionRef = useRef<LockSession | null>(null)
   const instructionsRef = useRef<HTMLDivElement>(null)
@@ -40,30 +42,53 @@ export function SenlyzerLock({ contentId, children, onUnlocked }: Props) {
   useEffect(() => { unlockedRef.current = unlocked }, [unlocked])
   useEffect(() => { sessionRef.current = session }, [session])
 
-  useEffect(() => {
+  async function startSession() {
     if (!API) {
       setError('VITE_SENLYZER_API not configured')
       setLoading(false)
       return
     }
-    let cancelled = false
-    fetch(`${API}/api/v1/lock/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contentId }),
-    })
-      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-      .then((data: LockSession) => {
-        if (cancelled) return
-        setSession(data)
-        setLoading(false)
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API}/api/v1/lock/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentId }),
       })
-      .catch(err => {
-        if (cancelled) return
-        setError(err instanceof Error ? err.message : 'Unknown error')
-        setLoading(false)
-      })
-    return () => { cancelled = true }
+      if (!res.ok) {
+        if (res.status === 503) {
+          const body = await res.json().catch(() => null)
+          if (body?.error === 'NO_ACTIVE_CAMPAIGN') {
+            setNoCampaign(true)
+            setLoading(false)
+            return
+          }
+        }
+        throw new Error(`HTTP ${res.status}`)
+      }
+      const data: LockSession = await res.json()
+      setSession(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function restartSession() {
+    setSwitching(true)
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    setPass('')
+    setStatusMsg(null)
+    setSession(null)
+    setError(null)
+    await startSession()
+    setSwitching(false)
+  }
+
+  useEffect(() => {
+    startSession()
   }, [contentId])
 
   useEffect(() => {
@@ -111,18 +136,14 @@ export function SenlyzerLock({ contentId, children, onUnlocked }: Props) {
       if (data.valid) {
         setUnlocked(true)
         onUnlocked?.()
+      } else if (data.status === 'exhausted' || data.status === 'paused' || data.status === 'expired') {
+        restartSession()
       } else {
         setSession(s => s ? { ...s, attemptsLeft: data.attemptsLeft } : null)
         setShake(true)
         setTimeout(() => setShake(false), 400)
         setPass('')
-        if (data.status === 'exhausted') {
-          setStatusMsg('Bạn đã hết lượt thử. Vui lòng quay lại sau.')
-        } else if (data.status === 'expired') {
-          setStatusMsg('Phiên đã hết hạn. Refresh để thử lại.')
-        } else {
-          setStatusMsg(`Sai mã. Còn ${data.attemptsLeft} lượt.`)
-        }
+        setStatusMsg(`Sai mã. Còn ${data.attemptsLeft} lượt.`)
       }
     } catch {
       setStatusMsg('Lỗi kết nối. Vui lòng thử lại.')
@@ -163,6 +184,8 @@ export function SenlyzerLock({ contentId, children, onUnlocked }: Props) {
   const isExhausted = session ? session.attemptsLeft <= 0 : false
 
   if (unlocked) return <>{children}</>
+  if (switching) return <div className="senlyzer-lock-loading">Đang chuyển chiến dịch khác...</div>
+  if (noCampaign) return <div className="senlyzer-lock-loading">Hiện chưa có nội dung, vui lòng quay lại sau.</div>
   if (loading) return <div className="senlyzer-lock-loading">Đang tải...</div>
   if (error || !session) return <div className="senlyzer-lock-error">Không thể tải. {error}</div>
   if (isExpired) return <div className="senlyzer-lock-loading">Phiên đã hết hạn. Vui lòng refresh trang.</div>

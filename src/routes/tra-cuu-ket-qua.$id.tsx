@@ -1,7 +1,7 @@
 import { createFileRoute, useLoaderData } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { get, post } from '@/lib/api'
-// import { SenlyzerLock } from '@/components/senlyzer-lock' // CPA GATE - tạm comment
+import { SenlyzerLock } from '@/components/senlyzer-lock'
 import { LoveResultRenderer } from '@/components/lookups/love-result/result-renderer'
 import { NamingResultRenderer } from '@/components/lookups/naming-result/result-renderer'
 import type { LookupResponse, UnlockedLookup } from '@/types'
@@ -26,14 +26,8 @@ function LookupResultPage() {
   const [unlocking, setUnlocking] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // AUTO-UNLOCK: tạm thời bỏ CPA gate để test
-  useEffect(() => {
-    if (data.isLocked) {
-      autoUnlock()
-    }
-  }, [])
-
-  async function autoUnlock() {
+  async function handleUnlocked() {
+    if (!data.isLocked) return
     setUnlocking(true)
     setError(null)
     try {
@@ -48,14 +42,16 @@ function LookupResultPage() {
 
   if (data.isLocked) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-        {unlocking && <p className="text-muted">Đang mở khoá...</p>}
-        {error && <p className="text-danger">{error}</p>}
-        {/* CPA GATE tạm comment — uncomment khi deploy production
+      <main className="min-h-screen px-4 py-8">
         <SenlyzerLock contentId={`lookup-${data.lookupId}`} onUnlocked={handleUnlocked}>
-          <div className="h-48 w-full max-w-md rounded-lg bg-surface" />
+          {unlocking ? (
+            <p className="p-8 text-center text-muted">Đang mở khoá kết quả...</p>
+          ) : error ? (
+            <p className="p-8 text-center text-danger">{error}</p>
+          ) : (
+            <div className="mx-auto h-48 w-full max-w-md rounded-lg bg-surface" />
+          )}
         </SenlyzerLock>
-        */}
       </main>
     )
   }
