@@ -293,10 +293,45 @@ function SenlyzerLockStyles() {
         display: block;
         max-width: 100%;
         height: auto;
-        margin: 1rem 0;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
         border: 1px solid hsl(141 40% 85%);
         border-radius: 1rem;
         box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+      }
+      .senlyzer-lock-instructions img:not([data-align]),
+      .senlyzer-lock-instructions img[data-align="left"] {
+        margin-left: 0;
+        margin-right: auto;
+      }
+      .senlyzer-lock-instructions img[data-align="center"] {
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .senlyzer-lock-instructions img[data-align="right"] {
+        margin-left: auto;
+        margin-right: 0;
+      }
+      .senlyzer-lock-instructions .instruction-video {
+        position: relative;
+        width: 100%;
+        height: 0;
+        margin: 1rem 0;
+        padding-bottom: 56.25%;
+        overflow: hidden;
+        border: 1px solid hsl(141 40% 85%);
+        border-radius: 1rem;
+        background: #f8fafc;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+      }
+      .senlyzer-lock-instructions .instruction-video iframe,
+      .senlyzer-lock-instructions .instruction-video video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
       }
       .senlyzer-lock-instructions strong { font-weight: 700; }
       .senlyzer-lock-instructions .copy-block {
